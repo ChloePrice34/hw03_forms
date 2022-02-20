@@ -11,6 +11,7 @@ class AboutAuthorView(TemplateView):
         context['GitHub'] = 'GitHub'
         return context
 
+
 class AboutTechView(TemplateView):
     template_name = 'about/tech.html'
 
