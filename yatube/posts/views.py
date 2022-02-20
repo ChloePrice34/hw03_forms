@@ -38,6 +38,7 @@ def group_posts(request, slug):
     }
     return render(request, template, context)
 
+
 def profile(request, username):
     template = 'posts/profile.html'
     user = User.objects.get(username=username)
@@ -75,6 +76,7 @@ def post_detail(request, post_id):
 
     }
     return render(request, template, context)
+
 
 @login_required
 def post_create(request):
