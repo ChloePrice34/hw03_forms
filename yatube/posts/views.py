@@ -74,7 +74,7 @@ def post_detail(request, post_id):
         'author': author,
         'group': group,
         'text_title': text_title,
-
+        'post': post,
     }
     return render(request, template, context)
 
