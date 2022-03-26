@@ -26,6 +26,8 @@ SECRET_KEY = '8t4*)6(ra(54f+^%h&)h@b0xr@sf(4lzrb$=!5e2xn+4e&_axd'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+PAGE_NUM = 10
+
 ALLOWED_HOSTS = []
 
 LOGIN_URL = 'users:login'
