@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
-from yatube.settings import PAGE_NUM
+from yatube.settings import posts_per_page
 
 from .forms import PostForm
 from .models import Group
@@ -13,7 +13,7 @@ from .models import User
 def index(request):
     template = 'posts/index.html'
     posts = Post.objects.all()
-    paginator = Paginator(posts, PAGE_NUM)
+    paginator = Paginator(posts, posts_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
@@ -26,8 +26,8 @@ def index(request):
 def group_posts(request, slug):
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()[:PAGE_NUM]
-    paginator = Paginator(posts, PAGE_NUM)
+    posts = group.posts.all()[:posts_per_page]
+    paginator = Paginator(posts, posts_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
@@ -41,14 +41,12 @@ def group_posts(request, slug):
 def profile(request, username):
     username = get_object_or_404(User, username=username)
     posts = username.posts.all()
-    paginator = Paginator(posts, PAGE_NUM)
+    paginator = Paginator(posts, posts_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     posts_num = posts.count()
-    title = str(username.get_full_name())
     context = {
         'username': username,
-        'title': title,
         'posts_num': posts_num,
         'page_obj': page_obj,
     }
@@ -95,7 +93,3 @@ def post_edit(request, post_id):
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id=post_id)
-
-    form = PostForm(instance=post)
-    return render(request, 'posts/post_create.html', {'form': form,
-                                                      'is_edit': True})
