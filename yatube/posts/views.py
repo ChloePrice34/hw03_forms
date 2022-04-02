@@ -8,12 +8,13 @@ from .models import Group
 from .models import Post
 from .models import User
 
+
 def paginator_call(posts, request):
     paginator = Paginator(posts, posts_per_page)
-    page_number = request.GET.get('page') 
+    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return page_obj
-    
+
 
 def index(request):
     template = 'posts/index.html'
