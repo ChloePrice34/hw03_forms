@@ -3,7 +3,6 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
 from yatube.settings import posts_per_page
-
 from .forms import PostForm
 from .models import Group
 from .models import Post
@@ -26,7 +25,7 @@ def index(request):
 def group_posts(request, slug):
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()[:posts_per_page]
+    posts = group.posts.all()
     paginator = Paginator(posts, posts_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -39,16 +38,16 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    username = get_object_or_404(User, username=username)
-    posts = username.posts.all()
-    paginator = Paginator(posts, posts_per_page)
+    user_profile = get_object_or_404(User, username=username)
+    user_posts = Post.objects.filter(author=user_profile)
+    posts_count = user_posts.count()
+    paginator = Paginator(user_posts, posts_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    posts_num = posts.count()
     context = {
-        'username': username,
-        'posts_num': posts_num,
+        'author': user_profile,
         'page_obj': page_obj,
+        'count': posts_count,
     }
     return render(request, 'posts/profile.html', context)
 
