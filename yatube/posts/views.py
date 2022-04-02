@@ -8,13 +8,17 @@ from .models import Group
 from .models import Post
 from .models import User
 
+def paginator_call(posts, request):
+    paginator = Paginator(posts, posts_per_page)
+    page_number = request.GET.get('page') 
+    page_obj = paginator.get_page(page_number)
+    return page_obj
+    
 
 def index(request):
     template = 'posts/index.html'
     posts = Post.objects.all()
-    paginator = Paginator(posts, posts_per_page)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_call(posts, request)
     context = {
         'page_obj': page_obj,
         'posts': posts,
@@ -26,9 +30,7 @@ def group_posts(request, slug):
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all()
-    paginator = Paginator(posts, posts_per_page)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_call(posts, request)
     context = {
         'page_obj': page_obj,
         'group': group,
@@ -41,9 +43,7 @@ def profile(request, username):
     user_profile = get_object_or_404(User, username=username)
     user_posts = Post.objects.filter(author=user_profile)
     posts_count = user_posts.count()
-    paginator = Paginator(user_posts, posts_per_page)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_call(user_posts, request)
     context = {
         'author': user_profile,
         'page_obj': page_obj,
@@ -65,30 +65,35 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    template = 'posts/post_create.html'
-    select_group = Group.objects.all()
     form = PostForm(request.POST or None)
     if form.is_valid():
         form.instance.author = request.user
         form.save()
         return redirect('posts:profile', username=request.user.username)
     context = {
+        'is_edit': False,
+        'title': 'Новый пост',
+        'groups': Group.objects.all(),
         'form': form,
-        'select_group': select_group,
     }
-    return render(request, template, context)
+    return render(request, 'posts/post_create.html', context)
 
 
 @login_required
 def post_edit(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    if request.user != post.author:
-        return redirect('posts:post_detail', post_id=post_id)
-    if request.method != 'POST':
-        form = PostForm(request.POST or None, instance=post)
-        return render(request, 'posts/post_create.html', {'form': form,
-                                                          'is_edit': True})
-    form = PostForm(request.POST, instance=post)
-    if form.is_valid():
+    post = get_object_or_404(Post, id=post_id)
+    if post.author != request.user:
+        return redirect('posts:post_detail', post.id)
+    form = PostForm(request.POST or None,
+                    instance=post)
+    if request.method == 'POST' and form.is_valid():
         form.save()
-        return redirect('posts:post_detail', post_id=post_id)
+        return redirect('posts:post_detail', post.id)
+    context = {
+        'is_edit': True,
+        'title': 'Редактирование поста',
+        'groups': Group.objects.all(),
+        'post_id': post.id,
+        'form': form,
+    }
+    return render(request, 'posts/post_create.html', context)
