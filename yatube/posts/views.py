@@ -59,6 +59,7 @@ def post_detail(request, post_id):
     posts = user_post.author.posts.all()
     posts_count = posts.count()
     context = {
+        'author': author,
         'post': user_post,
         'posts_count': posts_count,
     }
