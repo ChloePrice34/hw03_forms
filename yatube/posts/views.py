@@ -42,7 +42,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     user_profile = get_object_or_404(User, username=username)
-    user_posts = Post.objects.filter(author=user_profile)
+    user_posts = user_profile.posts.all()
     posts_count = user_posts.count()
     page_obj = paginator_call(user_posts, request)
     context = {
@@ -55,7 +55,8 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     user_post = get_object_or_404(Post, pk=post_id)
-    posts = Post.objects.filter(author_id=user_post.author_id)
+    author = user_post.author
+    posts = user_post.author.posts.all()
     posts_count = posts.count()
     context = {
         'post': user_post,
@@ -68,12 +69,13 @@ def post_detail(request, post_id):
 def post_create(request):
     form = PostForm(request.POST or None)
     if form.is_valid():
-        form.instance.author = request.user
-        form.save()
-        return redirect('posts:profile', username=request.user.username)
+        author = request.user
+        post = form.save(commit=False)
+        post.author = request.user
+        post.save()
+        return redirect('posts:profile', username=author)
     context = {
         'is_edit': False,
-        'title': 'Новый пост',
         'groups': Group.objects.all(),
         'form': form,
     }
@@ -85,14 +87,12 @@ def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if post.author != request.user:
         return redirect('posts:post_detail', post.id)
-    form = PostForm(request.POST or None,
-                    instance=post)
+    form = PostForm(request.POST or None, instance=post)
     if request.method == 'POST' and form.is_valid():
         form.save()
         return redirect('posts:post_detail', post.id)
     context = {
         'is_edit': True,
-        'title': 'Редактирование поста',
         'groups': Group.objects.all(),
         'post_id': post.id,
         'form': form,
