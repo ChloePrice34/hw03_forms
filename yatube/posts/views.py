@@ -70,11 +70,10 @@ def post_detail(request, post_id):
 def post_create(request):
     form = PostForm(request.POST or None)
     if form.is_valid():
-        author = request.user
         post = form.save(commit=False)
         post.author = request.user
         post.save()
-        return redirect('posts:profile', username=author)
+        return redirect('posts:profile', username=request.user)
     context = {
         'is_edit': False,
         'groups': Group.objects.all(),
@@ -89,13 +88,12 @@ def post_edit(request, post_id):
     if post.author != request.user:
         return redirect('posts:post_detail', post.id)
     form = PostForm(request.POST or None, instance=post)
-    if request.method == 'POST' and form.is_valid():
+    if request.method == 'POST':
         form.save()
         return redirect('posts:post_detail', post.id)
     context = {
         'is_edit': True,
         'groups': Group.objects.all(),
-        'post_id': post.id,
         'form': form,
     }
     return render(request, 'posts/post_create.html', context)

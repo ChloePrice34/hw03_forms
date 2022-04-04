@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Новый пост{{ text_title }} {% endblock %}
+{% block title %}Новый пост{% endblock %}
 
 {% block content %}
 <div class="card-header">
@@ -32,8 +32,8 @@
       </label>
       <select name="group" class="form-control" id="id_group">
         <option value="" selected>---------</option>
-        {% for group in select_group %}
-        <option value="1">{{group}}</option>
+        {% for group in groups %}
+        <option value="1">{{ group }}</option>
         {% endfor %}
       </select>
       <small id="id_group-help" class="form-text text-muted">
